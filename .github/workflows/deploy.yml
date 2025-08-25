@@ -1,0 +1,39 @@
+name: Deploy Hexo Blog
+
+on:
+  push:
+    branches:
+      - main   # 监听 main 分支提交
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取仓库代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. 安装 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm install
+
+      # 4. 生成静态网页
+      - name: Build Hexo
+        run: npx hexo generate
+
+      # 5. 部署到服务器 (需要 ssh 权限)
+      - name: Deploy to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASS }}
+          source: "public/*"
+          target: "/var/www/html"
